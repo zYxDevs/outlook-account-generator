@@ -30,12 +30,11 @@
 
 ## 👉 Explore Our Other Awesome Products
 
-- ✅ [Botasaurus](https://github.com/omkarcloud/botasaurus): The All-in-One Web Scraping Framework with Anti-Detection, Parallelization, Asynchronous, and Caching Superpowers.
+- ✅ [BOTASAURUS](https://github.com/omkarcloud/botasaurus): The All-in-One Web Scraping Framework with Anti-Detection, Parallelization, Asynchronous, and Caching Superpowers.
 
-- ✅ [Trip Advisor](https://github.com/omkarcloud/tripadvisor-scraper): Discover websites, emails, and phone numbers of hotels and restaurants from the untapped gold mine of TripAdvisor leads.
+- ✅ [GOOGLE MAPS SCRAPER](https://github.com/omkarcloud/google-maps-scraper): Find thousands of new customers personal phone, email, LinkedIn, Twitter and grow your business exponentially.
 
-- ✅ [Google Maps Scraper](https://github.com/omkarcloud/google-maps-scraper): Find thousands of new customers personal phone, email, LinkedIn, Twitter and grow your business exponentially.
-
+- ✅ [GOOGLE SCRAPER](https://github.com/omkarcloud/google-scraper): Discover Search Results from Google.
 
 ---
 
