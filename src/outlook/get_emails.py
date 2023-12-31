@@ -7,18 +7,13 @@ from .mail_utils import  load_outlook, open_junk_mail
 from botasaurus.decorator_helpers import retry_on_stale_element
 def convert_to_utc(time_str):
     # Parse the string to a datetime object
-    
+
     try:
         local_time = datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S%z')
     except ValueError:
         local_time = datetime.strptime(time_str, '%Y-%m-%d')
-        dt_utc = local_time.replace(tzinfo=timezone.utc)
-        return dt_utc
-
-    # Convert to UTC
-    utc_time = local_time.astimezone(timezone.utc)
-
-    return utc_time
+        return local_time.replace(tzinfo=timezone.utc)
+    return local_time.astimezone(timezone.utc)
 
 def toiso(date):
     return date.isoformat() 
@@ -47,7 +42,7 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
 
     def getconsels():
         return driver.get_elements_or_none_by_selector("#MailList .customScrollBar [data-convid]", bt.Wait.SHORT )
-    
+
     def hasscrolledtoend():
         el = driver.get_element_or_none_by_selector('#MailList .customScrollBar', bt.Wait.SHORT )
         return not driver.can_element_be_scrolled(el)
@@ -60,21 +55,21 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
 
         new_items = []
         while True:
-            
+
             consels, cons  = getcons()
-            
+
             for con in cons:
                 if con not in seen_conversations:
                     new_items.append(con)
                     seen_conversations.add(con)
-            
+
             if new_items:
                 return new_items
-            
+
             if not cons:
                 # no emails
                 return []
-            
+
             driver.scroll_into_view(consels[-1])
 
             while getspinner():
@@ -82,7 +77,7 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
 
             if hasscrolledtoend() and not getspinner():
                 consels, cons  = getcons()
-                
+
                 for con in cons:
                     if con not in seen_conversations:
                         new_items.append(con)
@@ -105,7 +100,7 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
         return new_dict
 
 
-    
+
     def get_email_details(convids):
         es =  driver.execute_script("return window.getEmails(arguments[0])", convids)
 
@@ -140,7 +135,7 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
             for repl in e['replies']:
                 repl['received_date'] = toiso(convert_to_utc(repl['received_date']))
                 repl['attachments'] = [sort_dict_by_keys(at, attachments_keys) for at in repl['attachments']]    
-            
+
             e['received_date'] = toiso(convert_to_utc(e['received_date']))
             e['attachments'] = [sort_dict_by_keys(at, attachments_keys) for at in e['attachments']]    
             e['replies'] = [sort_dict_by_keys( enrich_email(repl) , keys) for repl in e['replies']]    
@@ -151,16 +146,14 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
 
     def exec_get_email(convid):
         return driver.execute_script("return window.getEmail(arguments[0])", convid)
-    
+
     def is_received_date_before_now_for_email(received, email_detail):
         before_now =  is_received_date_before_now(email_detail['received_date'],  received)
 
         if before_now:
             for repl in email_detail['replies']:
                 rst = is_received_date_before_now(repl['received_date'],  received)
-                if rst:
-                    pass
-                else:
+                if not rst:
                     before_now = rst
                     break
 
@@ -170,7 +163,7 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
         nonlocal seen_conversations
 
         start_time = time()
-                
+
         WAIT_TIME = 20 # WAIT 40 SECONDS
 
         while True:
@@ -192,7 +185,7 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
                 # TODO: raise later
                     # IF ANY CASE PRINTED
                     # ELSE REMOVE
-                
+
     convs = get_new_links()
 
     result = []
@@ -201,15 +194,13 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
 
         email_detail = get_email_detail(conv)
         is_outlook_email = "Outlook" in email_detail['sender']["name"]
-        if is_outlook_email and exclude_outlook_team_emails:
-            pass
-        else:
+        if not is_outlook_email or not exclude_outlook_team_emails:
             if received and is_received_date_before_now_for_email(received, email_detail):
                 break
-            
+
             if is_unread is not None:
                     isemail_unread = not email_detail['read']
-                    
+
                     if is_unread == (isemail_unread):
                         result.append(conv)      
                     else:
@@ -220,7 +211,7 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
                                 break
             else:
                 result.append(conv)
-         
+
         if len(convs) == 1:
             new_links = get_new_links()
 
@@ -231,24 +222,21 @@ def perform_get_emails(driver:AntiDetectDriver, received=None, max=None, is_unre
         result = result[:max]
 
     fnl = get_email_details(result)
-     
+
     return fnl
 
 
 def get_now_utc(data):
     delta = data
-    
+
     if delta is None:
-        now_utc = None
+        return None
     elif isinstance(delta, timedelta):
-        now_utc = datetime.now(timezone.utc) - delta
-    elif isinstance(delta, datetime):
-        now_utc = delta
-    elif isinstance(delta, str):
-        now_utc = convert_to_utc(delta)
+        return datetime.now(timezone.utc) - delta
+    elif isinstance(delta, datetime) or not isinstance(delta, str):
+        return delta
     else:
-        now_utc = delta
-    return now_utc
+        return convert_to_utc(delta)
 
 
 @browser(

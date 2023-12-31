@@ -3,9 +3,7 @@ from botasaurus import *
 from .browser_attributes import browser_attributes
 from .mail_utils import load_outlook
 
-att = {**browser_attributes }
-att["headless"]=False
-att["output"]=None
+att = {**browser_attributes, "headless": False, "output": None}
 
 @browser(**att)
 def check(driver:AntiDetectDriver, data):

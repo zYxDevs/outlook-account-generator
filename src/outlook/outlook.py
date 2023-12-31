@@ -31,7 +31,7 @@ class Outlook:
         """
         if isinstance(proxies, str):
             proxies = [proxies]  
-            
+
         if proxies:
             proxies_cycle = cycle(proxies)
 
@@ -55,7 +55,7 @@ class Outlook:
         createdaccounts = []
 
         MICROSOFT_ACCOUNT_CREATION_LIMIT = 3
-        
+
         if key:
             if not proxies:
                 parallel = MICROSOFT_ACCOUNT_CREATION_LIMIT
@@ -74,14 +74,14 @@ class Outlook:
                 ls = [create_data(key) for i in temp]
 
                 ctd = create_accounts(ls, parallel = parallel)
-                
+
                 pmt = prompt_change_ip
                 for i in ctd:
                     if type(i) is dict:
-                        createdaccounts.append(i)        
-                    if i == PHONE_VERIFICATION or i == DETECTED:
+                        createdaccounts.append(i)
+                    if i in [PHONE_VERIFICATION, DETECTED]:
                         pmt = prompt_change_ip3
-                
+
                 if not proxies:
                     if len(createdaccounts) < count:
                         pmt(True)
@@ -94,26 +94,26 @@ class Outlook:
                 data = create_data(key)
 
                 account = create_accounts(data)
-                rantimes+=1   
+                rantimes+=1
                 if account is None:
                     pass
                 elif account == RETRY:
                     pass
-                elif account == PHONE_VERIFICATION or account == DETECTED:
+                elif account in [PHONE_VERIFICATION, DETECTED]:
                     # print in method only
 
                     if len(createdaccounts) < count:
                         prompt_change_ip3(True)
                 else:
                     createdaccounts.append(account)
-                    
+
                     if not proxies:
                         if rantimes==MICROSOFT_ACCOUNT_CREATION_LIMIT:
                             rantimes=0
                             if len(createdaccounts) < count:
                                 prompt_change_ip(True)
 
-        
+
             return createdaccounts
 
     @staticmethod
@@ -182,13 +182,16 @@ class Outlook:
         username = clean_username(username)
         if not proxy:
             ensure_unique_ip(username)
-        attempts = 4
-        while attempts > 0:
-            latest_email = Outlook.get_latest_email(username, received=received, with_spam=with_spam, exclude_outlook_team_emails=exclude_outlook_team_emails, proxy=proxy)
-            if latest_email:
+        for _ in range(4, 0, -1):
+            if latest_email := Outlook.get_latest_email(
+                username,
+                received=received,
+                with_spam=with_spam,
+                exclude_outlook_team_emails=exclude_outlook_team_emails,
+                proxy=proxy,
+            ):
                 return latest_email
             time.sleep(10)  # Wait for 10 seconds before retrying
-            attempts -= 1
         return None
 
     @staticmethod
@@ -207,9 +210,7 @@ class Outlook:
         if not proxy:
             ensure_unique_ip(username)
         email = Outlook.get_emails(username, received=received, with_spam=with_spam, exclude_outlook_team_emails=exclude_outlook_team_emails, max=1, proxy=proxy)
-        if len(email) == 0:
-            return None
-        return email[0]
+        return None if len(email) == 0 else email[0]
 
     @staticmethod
     def get_unread_emails(username: str, received=None, max=None, with_spam=False, exclude_outlook_team_emails=False, proxy: Optional[str] = None) -> List[Dict[str, str]]:
