@@ -17,10 +17,9 @@ def remove_query_params(url):
     # Parse the URL
     parsed_url = urlparse(url)
 
-    # Reconstruct the URL without query parameters
-    clean_url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', '', ''))
-
-    return clean_url
+    return urlunparse(
+        (parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', '', '')
+    )
 
 def keep_getting_element(driver:AntiDetectDriver, selector):
         btn = driver.get_element_or_none_by_selector(selector, bt.Wait.SHORT )
@@ -32,7 +31,7 @@ def keep_getting_element(driver:AntiDetectDriver, selector):
 
 
 def wait_till_in_page(driver:AntiDetectDriver, page):
-    while not ( page in remove_query_params(driver.current_url)):
+    while page not in remove_query_params(driver.current_url):
         time.sleep(0.5)
 
 
@@ -50,26 +49,24 @@ def wait_till_accounts_page(driver):
 
 
 def keep_clicking_till_page_not_change(driver:AntiDetectDriver, selector, to = None):
+    btn = driver.get_element_or_none_by_selector(selector, bt.Wait.LONG )
+
+    while btn is None:
         btn = driver.get_element_or_none_by_selector(selector, bt.Wait.LONG )
-    
-        while btn is None:
-            btn = driver.get_element_or_none_by_selector(selector, bt.Wait.LONG )
 
-        currenturl = driver.current_url
+    currenturl = driver.current_url
 
-        changed = False
-        while not changed:
-            btn = driver.get_element_or_none_by_selector(selector, bt.Wait.LONG )
-            if btn:
-                driver.js_click(btn)
-                time.sleep(2)
-            if currenturl != driver.current_url:
-                if to:
-                    if to in driver.current_url:
-                        changed = True
-                else:
-                    changed = True
-            time.sleep(0.1)
+    changed = False
+    while not changed:
+        if btn := driver.get_element_or_none_by_selector(
+            selector, bt.Wait.LONG
+        ):
+            driver.js_click(btn)
+            time.sleep(2)
+        if currenturl != driver.current_url:
+            if to and to in driver.current_url or not to:
+                changed = True
+        time.sleep(0.1)
 
 
 
@@ -153,8 +150,7 @@ def accept_notice(driver):
         keep_clicking_till_page_not_change(driver, '[id="id__0"]')
     
 def getaccpetbtnselector():
-    accpetid = '.inline-block.button-item.ext-button-item .primary, #acceptButton'
-    return accpetid
+    return '.inline-block.button-item.ext-button-item .primary, #acceptButton'
 
         
 
@@ -207,42 +203,41 @@ def give_consent(driver:AntiDetectDriver):
 def create_firefox(data):
             
             
-            try:
-                service = Service(executable_path=GeckoDriverManager().install())
+    try:
+        service = Service(executable_path=GeckoDriverManager().install())
 
-                proxy = data.get('proxy') 
-                if proxy:
-                    selwireOptions = {'proxy': {'http': proxy, 'https': proxy}}
-                    driver = AntiDetectFirefoxDriverSeleniumWire(
-                                                service=service,
-                                                seleniumwire_options=selwireOptions, 
-                                            )
-                
-                
+        if proxy := data.get('proxy'):
+            selwireOptions = {'proxy': {'http': proxy, 'https': proxy}}
+            driver = AntiDetectFirefoxDriverSeleniumWire(
+                                        service=service,
+                                        seleniumwire_options=selwireOptions, 
+                                    )
 
-                else:
-                    driver = AntiDetectFirefoxDriver(
-                                                service=service,
-                                            )
-                driver.maximize_window()
-                return driver
-            except ValueError as e:
-                if "You have to add GH_TOKEN".lower() in str(e).lower():
-                    traceback.print_exc()
-                    print('See https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-i-am-facing-errors for solution.')
-                    sys.exit(1)
-                    # return create_firefox(data)
 
-                else:
-                    traceback.print_exc()
-                    print('Failed to open Firefox. Retrying...')
-                    time.sleep(1)
-                    return create_firefox(data)
-            except:
-                traceback.print_exc()
-                print('Failed to open Firefox. Retrying...')
-                time.sleep(1)
-                return create_firefox(data)
+
+        else:
+            driver = AntiDetectFirefoxDriver(
+                                        service=service,
+                                    )
+        driver.maximize_window()
+        return driver
+    except ValueError as e:
+        if "You have to add GH_TOKEN".lower() in str(e).lower():
+            traceback.print_exc()
+            print('See https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-i-am-facing-errors for solution.')
+            sys.exit(1)
+            # return create_firefox(data)
+
+        else:
+            traceback.print_exc()
+            print('Failed to open Firefox. Retrying...')
+            time.sleep(1)
+            return create_firefox(data)
+    except:
+        traceback.print_exc()
+        print('Failed to open Firefox. Retrying...')
+        time.sleep(1)
+        return create_firefox(data)
             
 
 
@@ -359,15 +354,11 @@ RETRY = 'RETRY'
 DETECTED = 'detected'
 
 def check_for_phone_verification_or_captcha(driver:AntiDetectDriver):
-     while True:
-          if getiframeelement(driver):
-             if getphoneverificationelement(driver):
-                return PHONE_VERIFICATION
-             else:
-                return None   
-
-          if getphoneverificationelementwithwait(driver):
-                return PHONE_VERIFICATION
+    while True:
+        if getiframeelement(driver):
+            return PHONE_VERIFICATION if getphoneverificationelement(driver) else None
+        if getphoneverificationelementwithwait(driver):
+              return PHONE_VERIFICATION
 
 
 def create_user(proxy):
@@ -394,30 +385,27 @@ def get_unique_cookies(driver:AntiDetectDriver, links):
         driver.get(link)
         # time.sleep(5)  # Wait for 5 seconds for the page to load
         cookies = driver.get_cookies()
-        
+
         # Convert each cookie (which is a dictionary) to a frozenset for immutability and then add to the set
         for cookie in cookies:
             unique_cookies.add(frozenset(cookie.items()))
 
-    # Convert the frozensets back to dictionaries
-    unique_cookies_dicts = [dict(cookie) for cookie in unique_cookies]
-
-    return unique_cookies_dicts
+    return [dict(cookie) for cookie in unique_cookies]
 
 
 def waitforretryorsolved(driver):
-        print('')
-        print('   __ _ _ _    _                          _       _           ')
-        print('  / _(_) | |  (_)                        | |     | |          ')
-        print(' | |_ _| | |   _ _ __      ___ __ _ _ __ | |_ ___| |__   __ _ ')
-        print(r' |  _| | | |  | | `_ \    / __/ _` | `_ \| __/ __| `_ \ / _` |')
-        print(' | | | | | |  | | | | |  | (_| (_| | |_) | || (__| | | | (_| |')
-        print(r' |_| |_|_|_|  |_|_| |_|   \___\__,_| .__/ \__\___|_| |_|\__,_|')
-        print('                                   | |                        ')
-        print('                                   |_|                        ')
-        print('')
-        print('1. Press "R" to Retry Account Creation')
-        print('2. Press "Enter" Once Captcha is Solved')
-        ipt = bt.prompt("Your Input: ", )
-        if ipt == 'r' or ipt == 'R':
-            return RETRY
+    print('')
+    print('   __ _ _ _    _                          _       _           ')
+    print('  / _(_) | |  (_)                        | |     | |          ')
+    print(' | |_ _| | |   _ _ __      ___ __ _ _ __ | |_ ___| |__   __ _ ')
+    print(r' |  _| | | |  | | `_ \    / __/ _` | `_ \| __/ __| `_ \ / _` |')
+    print(' | | | | | |  | | | | |  | (_| (_| | |_) | || (__| | | | (_| |')
+    print(r' |_| |_|_|_|  |_|_| |_|   \___\__,_| .__/ \__\___|_| |_|\__,_|')
+    print('                                   | |                        ')
+    print('                                   |_|                        ')
+    print('')
+    print('1. Press "R" to Retry Account Creation')
+    print('2. Press "Enter" Once Captcha is Solved')
+    ipt = bt.prompt("Your Input: ", )
+    if ipt in ['r', 'R']:
+        return RETRY
