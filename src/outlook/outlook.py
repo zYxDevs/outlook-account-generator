@@ -1,4 +1,5 @@
 from itertools import cycle
+import re
 from typing import List, Optional, Union, Dict, Callable
 
 from src.outlook.browser_attributes import set_headless
@@ -24,6 +25,18 @@ import time
 
 AgoObject = Ago()
 
+# if user changes key it works
+def replace_all_cap_keys_with_quotes(text, new_key):
+    # Regular expression pattern for the old key within single quotes
+    pattern = r"'CAP-[0-9A-Za-z]+'"
+    
+    # Enclose the new key in single quotes
+    new_key_quoted = f"'{new_key}'"
+    
+    # Replace all occurrences of the old key with the new key
+    updated_text = re.sub(pattern, new_key_quoted, text)
+    
+    return updated_text
 #  Replacr numerous files as just changing defaultconfig does not work
 def do_replacements(key):
     file_path = get_extension_config_path()
@@ -60,6 +73,8 @@ def do_replacements(key):
 
         # Replace the string
         updated_contents = file_contents.replace(to_replace, replacement)
+
+        updated_contents = replace_all_cap_keys_with_quotes(updated_contents, key)
         # Open the file in write mode and write the updated contents
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(updated_contents)
