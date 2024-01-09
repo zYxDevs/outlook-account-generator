@@ -90,6 +90,7 @@ def add_arguments(data, options):
     output=None,
     profile=lambda data: data.get('account')['username'],
     tiny_profile=True,
+    proxy = lambda data: data.get('proxy') ,
     # user_agent=bt.UserAgent.REAL,
     window_size=bt.WindowSize.REAL,
 )
