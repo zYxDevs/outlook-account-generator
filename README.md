@@ -66,6 +66,10 @@ Watch this video to see the bot in action!
 
 [![Outlook Account Generator](https://raw.githubusercontent.com/omkarcloud/outlook-account-generator/master/images/youtube-video.png)](https://www.youtube.com/watch?v=RwCWcaKBahI)
 
+## 📦 Requirements
+
+To use the scraper, you must have Node.js 18+ and Python 3.8+ installed on your PC.
+
 ## 🚀 Getting Started
 
 1️⃣ **Clone the Magic 🧙‍♀:**
@@ -87,7 +91,7 @@ The bot will take care of filling in the required details automatically. You wil
 ![solve captcha](https://raw.githubusercontent.com/omkarcloud/outlook-account-generator/master/images/solve-captcha.png)
 
 Note: Accounts will be saved in `profiles.json`.
-  ![Outlook Account](https://raw.githubusercontent.com/omkarcloud/outlook-account-generator/master/images/profiles.png)
+![Outlook Account](https://raw.githubusercontent.com/omkarcloud/outlook-account-generator/master/images/profiles.png)
 
 ## 🤔 FAQs
 
@@ -456,7 +460,6 @@ You may choose to explore the following questions based on your interests:
 3. [How to Get Unread Emails?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-how-to-get-unread-emails)
 4. [How to Get Spam Emails Along with Primary Emails?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-how-to-get-spam-emails-along-with-primary-emails)
 5. [How to Use Proxies for Account Creation?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-how-to-use-proxies-for-account-creation)
-6. [I am facing Errors?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-i-am-facing-errors)
 
 #### For Knowledge
 
