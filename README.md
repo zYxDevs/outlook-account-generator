@@ -86,13 +86,8 @@ The bot will take care of filling in the required details automatically. You wil
 
 ![solve captcha](https://raw.githubusercontent.com/omkarcloud/outlook-account-generator/master/images/solve-captcha.png)
 
-Note:
-  1. Accounts will be saved in `profiles.json`.
+Note: Accounts will be saved in `profiles.json`.
   ![Outlook Account](https://raw.githubusercontent.com/omkarcloud/outlook-account-generator/master/images/profiles.png)
-
-  2. This Bot requires Firefox, as firefox is able to bypass Microsoft's Anti-Detection Measures. If you don't have Firefox, download it from the Mozilla website [here](https://www.mozilla.org/en-US/firefox/new/).
-
-  3. For users on Mac/Linux, please be aware that the bot may experience some instability due to the implementation of `webdriver-manager's` Firefox Installer on Mac/Linux. If you encounter any issues, then borrow a Windows PC from family or friends and run the Bot. (It's a bit inconvenient I know, but you're just this step away from creating Outlook accounts.)
 
 ## 🤔 FAQs
 
@@ -466,11 +461,10 @@ You may choose to explore the following questions based on your interests:
 #### For Knowledge
 
 1. [Which Proxy Provider to Choose?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-which-proxy-provider-to-choose)
-2. [Why did you use Firefox for Account Creation instead of Chrome?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-why-did-you-use-firefox-for-account-creation-instead-of-chrome)
 <!-- 3. [How to Use Captcha Solvers like Capsolver and 2Captcha for Automatically Solving Captchas?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-how-to-use-captcha-solvers-like-capsolver-and-2captcha-for-automatically-solving-captchas)
 4. [I am an experienced Web Scraper and can integrate Captcha Solving in Bot, where to start?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-i-am-an-experienced-web-scraper-and-can-integrate-captcha-solving-in-bot-where-to-start) -->
-3. [Is the Tool Safe for Account Creation?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-is-the-tool-safe-for-account-creation)
-4. [Can the Tool Be Used for Spam or Malicious Activities?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-can-the-tool-be-used-for-spam-or-malicious-activities)
+2. [Is the Tool Safe for Account Creation?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-is-the-tool-safe-for-account-creation)
+3. [Can the Tool Be Used for Spam or Malicious Activities?](https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-can-the-tool-be-used-for-spam-or-malicious-activities)
 
 ### ❓ Need More Help or Have Additional Questions?
 

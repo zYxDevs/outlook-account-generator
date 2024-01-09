@@ -1,17 +1,10 @@
 import json
-import traceback
 
-from capsolver import UnknownError
 from botasaurus.ip_utils import find_ip_details
 import time
 from botasaurus import *
-from selenium.webdriver.firefox.service import Service
-from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support.select import Select
-from botasaurus.drivers import AntiDetectFirefoxDriverSeleniumWire, AntiDetectFirefoxDriver
-from src.outlook.solve_captcha import solve_captcha
 from urllib.parse import urlparse, urlunparse
-import sys
 
 def remove_query_params(url):
     # Parse the URL
@@ -204,47 +197,6 @@ def give_consent(driver:AntiDetectDriver):
     
     wait_till_accounts_page(driver)
         
-def create_firefox(data):
-            
-            
-            try:
-                service = Service(executable_path=GeckoDriverManager().install())
-
-                proxy = data.get('proxy') 
-                if proxy:
-                    selwireOptions = {'proxy': {'http': proxy, 'https': proxy}}
-                    driver = AntiDetectFirefoxDriverSeleniumWire(
-                                                service=service,
-                                                seleniumwire_options=selwireOptions, 
-                                            )
-                
-                
-
-                else:
-                    driver = AntiDetectFirefoxDriver(
-                                                service=service,
-                                            )
-                driver.maximize_window()
-                return driver
-            except ValueError as e:
-                if "You have to add GH_TOKEN".lower() in str(e).lower():
-                    traceback.print_exc()
-                    print('See https://github.com/omkarcloud/outlook-account-generator/blob/master/advanced.md#-i-am-facing-errors for solution.')
-                    sys.exit(1)
-                    # return create_firefox(data)
-
-                else:
-                    traceback.print_exc()
-                    print('Failed to open Firefox. Retrying...')
-                    time.sleep(1)
-                    return create_firefox(data)
-            except:
-                traceback.print_exc()
-                print('Failed to open Firefox. Retrying...')
-                time.sleep(1)
-                return create_firefox(data)
-            
-
 
 def submittoken(driver, token):
     return driver.execute_script('parent.postMessage(JSON.stringify({eventId:"challenge-complete",payload:{sessionToken:"' + token + '"}}),"*")')

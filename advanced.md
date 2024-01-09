@@ -63,15 +63,6 @@ However, if you know of any Proxy Provider that works for creating Outlook Accou
 During our testing, IPRoyal worked well for getting/sending emails. Avoid using Bright Data as it refuses to connect.
 
 
-### ❓ Why did you use Firefox for Account Creation instead of Chrome?
-
-Chrome was getting detected, and we were facing the following problems:
-
-- Captchas were much harder and longer to solve (10 steps long).
-- Even after successfully solving the Captcha, we were asked to solve it again and again in a loop.
-
-So, we used Firefox, which doesn't cause these issues, and Captchas are much easier to solve.
-
 ### ❓ I am facing Errors?
 
 If you encounter the error `API Rate limit exceeded. You have to add GH_TOKEN`, which is common in Ubuntu, follow these steps:
