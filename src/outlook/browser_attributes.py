@@ -14,7 +14,7 @@ def set_headless(val):
 browser_attributes = {
         "headless":get_headless, 
         "user_agent":bt.UserAgent.HASHED,
-        "window_size":bt.WindowSize.HASHED,
+        "window_size":bt.WindowSize.REAL,
         "proxy":get_proxy ,
         "profile":get_profile,
         "create_driver": create_stealth_driver(start_url=None, wait=None),  
