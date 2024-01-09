@@ -297,7 +297,7 @@ def get_captcha_id(driver:AntiDetectDriver):
 
 def solvecaptcha_with_captcha_solver(driver:AntiDetectDriver, proxy = None, captcha=None, capsolver_apikey=None):
 
-    blob = makeblob(getblob(driver))
+    # blob = makeblob(getblob(driver))
     
     #bt.prompt("Press Enter When Next Button is Visible")
     
@@ -310,17 +310,16 @@ def solvecaptcha_with_captcha_solver(driver:AntiDetectDriver, proxy = None, capt
     iframe = getiframeelement(driver)  
     iframe.is_displayed()
     driver.switch_to.frame(iframe)
-
     
-    try:
-        token = solve_captcha("B7D8911C-5CC8-A9A3-35B0-554ACEE604DA",  "https://signup.live.com/?lic=1", "https://client-api.arkoselabs.com",blob, getua(driver), proxy, capsolver_apikey, 'A71088C8-D85B-4442-9F9E-06D36E905159')
-    except UnknownError:
-        return DETECTED
-    except Exception as e:
-        traceback.print_exc()
-        return DETECTED
+    # try:
+    #     token = solve_captcha("B7D8911C-5CC8-A9A3-35B0-554ACEE604DA",  "https://signup.live.com/?lic=1", "https://client-api.arkoselabs.com",blob, getua(driver), proxy, capsolver_apikey, )
+    # except UnknownError:
+    #     return DETECTED
+    # except Exception as e:
+    #     traceback.print_exc()
+    #     return DETECTED
     
-    submittoken(driver, token)
+    # submittoken(driver, token)
     captcha_id_before_solved = get_captcha_id(driver)
     driver.switch_to.default_content()
 
@@ -374,7 +373,7 @@ def create_user(proxy):
             country_code = find_ip_details(proxy=proxy)['country']
             number_of_accounts_to_generate =  1
             # config['number_of_accounts_to_generate']
-            account = bt.generate_user(number_of_accounts_to_generate, country=country_code)
+            account = bt.generate_user(number_of_accounts_to_generate, country=country_code, use_temp_email=False)
             account['country'] = country_code
             return account        
 

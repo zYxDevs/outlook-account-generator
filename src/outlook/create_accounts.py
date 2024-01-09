@@ -2,14 +2,14 @@ from botasaurus.decorators_utils import create_directory_if_not_exists
 import traceback
 from botasaurus import *
 from .create_accounts_utils import *
-            
+from botasaurus.create_stealth_driver import create_stealth_driver
+from botasaurus.utils import  relative_path
 
 def createTempProfile(username, cookies):
   foldername = f"profiles/{username}/"
   create_directory_if_not_exists(foldername)
   pathjson = foldername +  "profile.json" 
   bt.write_json(cookies, pathjson, False )
-
 
 def convert_cookie_format(cookie):
     default_attributes = {
@@ -56,16 +56,49 @@ def convert_cookie_formats(cookies):
     return  bt.remove_nones([convert_cookie_format(cookie) for cookie in cookies ])
 
 
+
+def get_default_config_paths():
+    extension_path = relative_path('capsolver/assets/config.js', 0)
+    return [
+                relative_path("capsolver/aws-recognition.js", 0), 
+                relative_path("capsolver/background.js ", 0), 
+                relative_path("capsolver/funcaptcha-recognition.js", 0), 
+                relative_path("capsolver/hcaptcha-recognition.js", 0), 
+                relative_path("capsolver/image-to-text.js", 0), 
+                relative_path("capsolver/my-content-script.js", 0), 
+                relative_path("capsolver/recaptcha-recognition.js", 0), 
+                relative_path("capsolver/www/assets/index.80d9cc3d.js", 0), 
+                ]
+
+def get_extension_config_path():
+    extension_path = relative_path('./capsolver/assets/config.js', 0)
+    return extension_path
+
+
+def get_extension_path():
+    # extension_path = relative_path('../../Downloads/capsolver', 0)
+    extension_path = relative_path('./capsolver', 0)
+    return extension_path
+
+def add_arguments(data, options):
+    if data.get('capsolver_apikey'):
+        extension_path = get_extension_path()
+        options.add_argument(f'--load-extension={extension_path}')
+
 @browser(
-    create_driver= create_firefox, 
-    output=None
+    create_driver= create_stealth_driver(start_url=None, wait=None, add_arguments=add_arguments), 
+    output=None,
+    profile=lambda data: data.get('account')['username'],
+    tiny_profile=True,
+    # user_agent=bt.UserAgent.REAL,
+    window_size=bt.WindowSize.REAL,
 )
 def create_accounts(driver: AntiDetectDriver, data):
-        
         proxy = data['proxy']
         captcha = data.get('captcha')
         capsolver_apikey = data.get('capsolver_apikey')
-        account = create_user(proxy)
+        account = data.get('account')
+        # create_user(proxy)
 
         first_name = account['first_name']
         last_name = account['last_name']
@@ -122,8 +155,6 @@ def create_accounts(driver: AntiDetectDriver, data):
 
             give_consent(driver)
             
-
-
         try:
 
             driver.organic_get('https://signup.live.com/')
@@ -146,13 +177,13 @@ def create_accounts(driver: AntiDetectDriver, data):
 
                 return rst
 
-            links = [
-                'https://signup.live.com/',
-                'https://login.live.com/'
-            ]
-            unique_cookies = convert_cookie_formats(get_unique_cookies(driver, links))
+            # links = [
+            #     'https://signup.live.com/',
+            #     'https://login.live.com/'
+            # ]
+            # unique_cookies = convert_cookie_formats(get_unique_cookies(driver, links))
 
-            createTempProfile(username, unique_cookies)
+            # createTempProfile(username, unique_cookies)
 
             prevprofile = bt.Profile.profile
 

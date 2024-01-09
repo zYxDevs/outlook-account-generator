@@ -1,5 +1,6 @@
 from botasaurus import *
 from .mail_utils import get_profile, get_proxy
+from botasaurus.create_stealth_driver import create_stealth_driver
 
 headless = False
 def get_headless(_):
@@ -15,7 +16,8 @@ browser_attributes = {
         "user_agent":bt.UserAgent.HASHED,
         "window_size":bt.WindowSize.HASHED,
         "proxy":get_proxy ,
-        "profile":get_profile, 
+        "profile":get_profile,
+        "create_driver": create_stealth_driver(start_url=None, wait=None),  
         "tiny_profile":True, 
         # "output":None, 
         "block_images":True

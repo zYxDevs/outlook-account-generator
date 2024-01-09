@@ -2,26 +2,84 @@ from itertools import cycle
 from typing import List, Optional, Union, Dict, Callable
 
 from src.outlook.browser_attributes import set_headless
-from .create_accounts import  create_accounts
-from .create_accounts_utils import DETECTED, PHONE_VERIFICATION, RETRY
+from .create_accounts import (
+    create_accounts,
+    get_default_config_paths,
+    get_extension_config_path,
+)
+from .create_accounts_utils import DETECTED, PHONE_VERIFICATION, RETRY, create_user
 from .send_email import send_emails
 from .get_emails import get_emails
 from .check import check
-from .outlook_utils import clean_username, get_random_delay, prompt_change_ip, ensure_unique_ip, prompt_change_ip3
+from .outlook_utils import (
+    clean_username,
+    get_random_delay,
+    prompt_change_ip,
+    ensure_unique_ip,
+    prompt_change_ip3,
+)
 from .ago import Ago
 from botasaurus import *
 import time
-        
+
 AgoObject = Ago()
+
+#  Replacr numerous files as just changing defaultconfig does not work
+def do_replacements(key):
+    file_path = get_extension_config_path()
+    # String to be replaced and the replacement string
+
+    to_replace = "KEY"
+    replacement = key
+
+    # Read the file, replace the string, and write back to the file
+    # Open the file in read mode
+    with open(file_path, "r") as file:
+        file_contents = file.read()
+    # Replace the string
+    updated_contents = file_contents.replace(to_replace, replacement)
+    # Open the file in write mode and write the updated contents
+    with open(file_path, "w") as file:
+        file.write(updated_contents)
+
+    paths = get_default_config_paths()
+
+    for file_path in paths:
+        # String to be replaced and the replacement string
+        to_replace = "return e.defaultConfig"
+        replacement = (
+            "return { ...e.defaultConfig, apiKey: '"
+            + key
+            + "', appId: 'A71088C8-D85B-4442-9F9E-06D36E905159'}"
+        )
+
+        # Read the file, replace the string, and write back to the file
+        # Open the file in read mode
+        with open(file_path, "r", encoding="utf-8") as file:
+            file_contents = file.read()
+
+        # Replace the string
+        updated_contents = file_contents.replace(to_replace, replacement)
+        # Open the file in write mode and write the updated contents
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(updated_contents)
+
+    # print("String replacement successful.")
+
 
 class Outlook:
     """
     Provides Outlook email functionalities including account creation, sending and retrieving emails.
     """
-    Ago = AgoObject 
+
+    Ago = AgoObject
 
     @staticmethod
-    def create_accounts(count: int = 1, key=None, proxies: Union[None, str, List[str]] = None, ) -> None:
+    def create_accounts(
+        count: int = 1,
+        key=None,
+        proxies: Union[None, str, List[str]] = None,
+    ) -> None:
         """
         Creates Outlook email accounts.
 
@@ -30,10 +88,13 @@ class Outlook:
         :param proxies: Optional proxy server or list of proxy servers to be used for account creation.
         """
         if isinstance(proxies, str):
-            proxies = [proxies]  
-            
+            proxies = [proxies]
+
         if proxies:
             proxies_cycle = cycle(proxies)
+
+        if key:
+            do_replacements(key)
 
         def create_data(key):
             nonlocal proxies_cycle
@@ -44,44 +105,46 @@ class Outlook:
                 data = {"proxy": None}
 
             if key:
-                data['captcha'] = True
-                data['capsolver_apikey'] = key
+                data["captcha"] = True
+                data["capsolver_apikey"] = key
             else:
-                data['captcha'] = False
-                data['capsolver_apikey'] = None
+                data["captcha"] = False
+                data["capsolver_apikey"] = None
 
-            return data            
+            data["account"] = create_user(data["proxy"])
+
+            return data
 
         createdaccounts = []
 
         MICROSOFT_ACCOUNT_CREATION_LIMIT = 3
-        
+
         if key:
             if not proxies:
                 parallel = MICROSOFT_ACCOUNT_CREATION_LIMIT
             else:
-                parallel = bt.calc_max_parallel_browsers(min=MICROSOFT_ACCOUNT_CREATION_LIMIT)
+                parallel = bt.calc_max_parallel_browsers(
+                    min=MICROSOFT_ACCOUNT_CREATION_LIMIT
+                )
 
             while len(createdaccounts) < count:
-
-
                 if not proxies:
-                    tobecreated =  min(parallel,  count - len(createdaccounts))
+                    tobecreated = min(parallel, count - len(createdaccounts))
                 else:
-                    tobecreated =  count - len(createdaccounts)
+                    tobecreated = count - len(createdaccounts)
 
-                temp =  [None] *  tobecreated
+                temp = [None] * tobecreated
                 ls = [create_data(key) for i in temp]
 
-                ctd = create_accounts(ls, parallel = parallel)
-                
+                ctd = create_accounts(ls, parallel=parallel)
+
                 pmt = prompt_change_ip
                 for i in ctd:
                     if type(i) is dict:
-                        createdaccounts.append(i)        
+                        createdaccounts.append(i)
                     if i == PHONE_VERIFICATION or i == DETECTED:
                         pmt = prompt_change_ip3
-                
+
                 if not proxies:
                     if len(createdaccounts) < count:
                         pmt(True)
@@ -94,7 +157,7 @@ class Outlook:
                 data = create_data(key)
 
                 account = create_accounts(data)
-                rantimes+=1   
+                rantimes += 1
                 if account is None:
                     pass
                 elif account == RETRY:
@@ -106,14 +169,13 @@ class Outlook:
                         prompt_change_ip3(True)
                 else:
                     createdaccounts.append(account)
-                    
+
                     if not proxies:
-                        if rantimes==MICROSOFT_ACCOUNT_CREATION_LIMIT:
-                            rantimes=0
+                        if rantimes == MICROSOFT_ACCOUNT_CREATION_LIMIT:
+                            rantimes = 0
                             if len(createdaccounts) < count:
                                 prompt_change_ip(True)
 
-        
             return createdaccounts
 
     @staticmethod
@@ -123,9 +185,8 @@ class Outlook:
 
         :return: List of accounts
         """
-        
-        return bt.Profile.get_profiles()
 
+        return bt.Profile.get_profiles()
 
     @staticmethod
     def get_account_usernames() -> List[str]:
@@ -134,11 +195,17 @@ class Outlook:
 
         :return: List of accounts
         """
-        
-        return [account['username'] for account in Outlook.get_accounts()]
+
+        return [account["username"] for account in Outlook.get_accounts()]
 
     @staticmethod
-    def send_email(username: str, to: str, subject:Optional[str], body: str, proxy: Optional[str] = None ) -> None:
+    def send_email(
+        username: str,
+        to: str,
+        subject: Optional[str],
+        body: str,
+        proxy: Optional[str] = None,
+    ) -> None:
         """
         Sends an email from a specified account.
 
@@ -151,10 +218,17 @@ class Outlook:
         username = clean_username(username)
         if not proxy:
             ensure_unique_ip(username)
-        Outlook.send_emails(username, [{"to": to, "subject": subject, "body": body}], proxy=proxy)
+        Outlook.send_emails(
+            username, [{"to": to, "subject": subject, "body": body}], proxy=proxy
+        )
 
     @staticmethod
-    def send_emails(username: str, emails: List[Dict[str, str]], proxy: Optional[str] = None, get_random_delay: Callable = get_random_delay) -> None:
+    def send_emails(
+        username: str,
+        emails: List[Dict[str, str]],
+        proxy: Optional[str] = None,
+        get_random_delay: Callable = get_random_delay,
+    ) -> None:
         """
         Sends multiple emails from a specified account.
 
@@ -165,10 +239,22 @@ class Outlook:
         username = clean_username(username)
         if not proxy:
             ensure_unique_ip(username)
-        data ={"username":username, "emails":emails, "get_random_delay": get_random_delay, "proxy":proxy} 
+        data = {
+            "username": username,
+            "emails": emails,
+            "get_random_delay": get_random_delay,
+            "proxy": proxy,
+        }
         send_emails(data)
+
     @staticmethod
-    def get_latest_email_for_verification(username: str, received=AgoObject.JustNow, with_spam=True, exclude_outlook_team_emails=True, proxy: Optional[str] = None) -> Optional[Dict[str, str]]:
+    def get_latest_email_for_verification(
+        username: str,
+        received=AgoObject.JustNow,
+        with_spam=True,
+        exclude_outlook_team_emails=True,
+        proxy: Optional[str] = None,
+    ) -> Optional[Dict[str, str]]:
         """
         Retrieves the latest email for verification from the specified account.
 
@@ -184,7 +270,13 @@ class Outlook:
             ensure_unique_ip(username)
         attempts = 4
         while attempts > 0:
-            latest_email = Outlook.get_latest_email(username, received=received, with_spam=with_spam, exclude_outlook_team_emails=exclude_outlook_team_emails, proxy=proxy)
+            latest_email = Outlook.get_latest_email(
+                username,
+                received=received,
+                with_spam=with_spam,
+                exclude_outlook_team_emails=exclude_outlook_team_emails,
+                proxy=proxy,
+            )
             if latest_email:
                 return latest_email
             time.sleep(10)  # Wait for 10 seconds before retrying
@@ -192,7 +284,13 @@ class Outlook:
         return None
 
     @staticmethod
-    def get_latest_email(username: str, received=None, with_spam=False, exclude_outlook_team_emails=False, proxy: Optional[str] = None) -> Dict[str, str]:
+    def get_latest_email(
+        username: str,
+        received=None,
+        with_spam=False,
+        exclude_outlook_team_emails=False,
+        proxy: Optional[str] = None,
+    ) -> Dict[str, str]:
         """
         Retrieves the latest email from the specified account.
 
@@ -206,13 +304,27 @@ class Outlook:
         username = clean_username(username)
         if not proxy:
             ensure_unique_ip(username)
-        email = Outlook.get_emails(username, received=received, with_spam=with_spam, exclude_outlook_team_emails=exclude_outlook_team_emails, max=1, proxy=proxy)
+        email = Outlook.get_emails(
+            username,
+            received=received,
+            with_spam=with_spam,
+            exclude_outlook_team_emails=exclude_outlook_team_emails,
+            max=1,
+            proxy=proxy,
+        )
         if len(email) == 0:
             return None
         return email[0]
 
     @staticmethod
-    def get_unread_emails(username: str, received=None, max=None, with_spam=False, exclude_outlook_team_emails=False, proxy: Optional[str] = None) -> List[Dict[str, str]]:
+    def get_unread_emails(
+        username: str,
+        received=None,
+        max=None,
+        with_spam=False,
+        exclude_outlook_team_emails=False,
+        proxy: Optional[str] = None,
+    ) -> List[Dict[str, str]]:
         """
         Retrieves unread emails from the specified account. Please note that this method will mark the unread emails as read.
 
@@ -227,11 +339,26 @@ class Outlook:
         username = clean_username(username)
         if not proxy:
             ensure_unique_ip(username)
-        data = {"username": username, "received": received, "max": max, "unread": True, "with_spam": with_spam, "exclude_outlook_team_emails": exclude_outlook_team_emails, "proxy": proxy}
+        data = {
+            "username": username,
+            "received": received,
+            "max": max,
+            "unread": True,
+            "with_spam": with_spam,
+            "exclude_outlook_team_emails": exclude_outlook_team_emails,
+            "proxy": proxy,
+        }
         return get_emails(data)
 
     @staticmethod
-    def get_emails(username: str, received=None, max=None, with_spam=False, exclude_outlook_team_emails=False, proxy: Optional[str] = None) -> List[Dict[str, str]]:
+    def get_emails(
+        username: str,
+        received=None,
+        max=None,
+        with_spam=False,
+        exclude_outlook_team_emails=False,
+        proxy: Optional[str] = None,
+    ) -> List[Dict[str, str]]:
         """
         Retrieves emails from the specified account.
 
@@ -246,9 +373,16 @@ class Outlook:
         username = clean_username(username)
         if not proxy:
             ensure_unique_ip(username)
-        data = {"username": username, "received": received, "max": max, "unread": None, "with_spam": with_spam, "exclude_outlook_team_emails": exclude_outlook_team_emails, "proxy": proxy}
+        data = {
+            "username": username,
+            "received": received,
+            "max": max,
+            "unread": None,
+            "with_spam": with_spam,
+            "exclude_outlook_team_emails": exclude_outlook_team_emails,
+            "proxy": proxy,
+        }
         return get_emails(data)
-
 
     @staticmethod
     def open(username: str, proxy: Optional[str] = None) -> None:
@@ -259,10 +393,10 @@ class Outlook:
         :param proxy: Optional proxy server for opening Outlook. (str, optional)
         """
         username = clean_username(username)
-        
+
         if not proxy:
             ensure_unique_ip(username)
-        data = {"username":username, "proxy":proxy} 
+        data = {"username": username, "proxy": proxy}
         check(data)
 
     @staticmethod
@@ -270,18 +404,13 @@ class Outlook:
         """
         Shows Browser when sending recieving emails.
         """
-        
-        set_headless(False)
 
+        set_headless(False)
 
     @staticmethod
     def disable_show_in_action() -> None:
         """
         Hides Browser when sending recieving emails.
         """
-        
+
         set_headless(True)
-
-
-
-    
